@@ -1,5 +1,3 @@
 {
-  "ion": "https://ion.test:8084/",
-  "ionApi": "https://api.ion.test:8084/",
   "clientId": 4
 }
