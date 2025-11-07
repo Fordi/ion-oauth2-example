@@ -3,15 +3,9 @@ import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { join } from 'node:path';
 
-import { docRoot, ionApi, port } from "./lib/config.mjs";
-import { HttpCode, MimeTypes, hydrateRequest } from "./lib/http.mjs";
+import { docRoot, getConfig, port } from "./lib/config.mjs";
+import { HttpCode, hydrateRequest, MimeTypes } from "./lib/http.mjs";
 import { getOauthCallback, getOauthRequest } from './lib/oauth2.mjs';
-
-async function getConfig(request, response) {
-  return response.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify({
-    ionApi,
-  }))
-}
 
 async function getStatic(request, response) {
   const staticFile = join(docRoot, ...request.path.split('/'));
