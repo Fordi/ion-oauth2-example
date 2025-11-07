@@ -1,5 +1,9 @@
-import { createServer, STATUS_CODES } from 'node:http';
-import { readFile } from 'node:fs/promises';
+import { createServer } from 'node:http';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+import { existsSync } from 'node:fs';
+import { execSync } from 'node:child_process';
 
 const AppScopes = [
   "assets:list",
@@ -19,6 +23,12 @@ const HttpCode = {
   notFound: 404,
   internalServerError: 500,
   serviceUnavailable: 503,
+};
+
+const Types = {
+  ico: 'image/svg+xml',
+  html: 'text/html',
+  js: 'text/javascript',
 };
 
 // @see https://cesium.com/learn/ion/ion-oauth2/#step-1-register-your-application
@@ -47,75 +57,6 @@ if (!clientId) {
 if (ionApi !== 'https://api.cesium.com') {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 }
-
-// This is the script to be run on the client.  We'll toString it and strip off the `function () { ... }` wrapper.
-const clientScript = function (window, document) {
-  const elements = {};
-  [...document.querySelectorAll("*[id]")].forEach((e) => elements[e.id] = e);
-  const cookies = document.cookie.split(";").reduce((o, c) => {
-    const [key, ...value] = c.split("=");
-    o[key.trim()] = decodeURIComponent(value.join("="));
-    return o;
-  }, {});
-  const fetchIon = cookies.cs_access_token ? (uri, init) => fetch(new URL(uri, ionApi), {
-    ...init,
-    headers: {
-      ...init?.headers,
-      authorization: `Bearer ${cookies.cs_access_token}`
-    },
-  }).then(r => r.json())
-    : () => { throw new Error("Not logged in"); }
-
-  if (cookies.cs_access_token) {
-    elements.signin.setAttribute('disabled', 'disabled');
-  } else {
-    elements.signout.setAttribute('disabled', 'disabled');
-    elements.fetchAssets.setAttribute('disabled', 'disabled');
-  }
-
-  elements.signin.addEventListener("click", async () => {
-    window.location = "http://localhost:8080/oauth/request";
-  });
-
-  elements.signout.addEventListener("click", async () => {
-    document.cookie = `cs_access_token=; path=/; expires=01 Jan 1970 00:00:00 UTC`;
-    window.location.reload();
-  });
-
-  elements.fetchAssets.addEventListener('click', async () => {
-    const assets = await fetchIon('/v1/assets?limit=50&page=1&sortBy=DATE_ADDED&sortOrder=DESC');
-    elements.assets.innerHTML = JSON.stringify(assets, null, 2);
-  });
-}.toString()
-  .replace(/^function\s+\([^)]+\)\s*\{|\}\s*$/g, '');
-
-// Document to be served to the client
-const indexHtml = `
-<!doctype html>
-<html>
-  <head><title>Cesium Ion OAuth2 Example</title></head>
-  <body>
-    <h1>Cesium Ion OAuth2 Example</h1>
-    <div>
-      <button id="signin">Sign in</button> | 
-      <button id="signout">Sign out</button> | 
-      <button id="fetchAssets">Fetch assets</button>
-    </div>
-    <pre id="assets"></pre>
-    <script>
-      <!-- the internal script doesn't have access to server globals, so we'll provide the one we need -->
-      const ionApi = "${ionApi}";
-      ${clientScript}
-    </script>
-  </body>
-</html>
-`;
-
-const favicon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" stroke="none">
-  <circle cx="50" cy="50" r="50" fill="#fff"/>
-  <path fill="#6dabe4" d="M50 6C19 6 1 36 8 61q2 2 6-1l14-18q9-10 18 0l14 18c1 1 4 4 8 0l13-18q7-6 11-5C86 19 69 6 50 6m19 23c0 6-9 6-9 0s9-6 9 0"/>
-  <path fill="#709c49" d="M93 45q-1-3-7 1L72 64c-4 6-13 6-17 0L41 46q-4-4-8 0L19 64q-3 5-9 5a44 44 0 0 0 83-24"/>
-</svg>`;
 
 class HttpError extends Error {
   constructor(message, { status, headers, request: { url, method } = {} } = {}) {
@@ -151,39 +92,63 @@ function getVerifier(state) {
   return record?.[0];
 };
 
-async function newState() {
-  let state, verifier;
-  tidyStates().set(state = crypto.randomUUID(), [verifier = crypto.randomUUID(), Date.now()]);
+Uint8Array.prototype.toBase64 ??= function toBase64(options) {
+  let result = Buffer.from(this).toString('base64');
+  if (options?.alphabet === 'base64url') {
+    result = result.replace(/\+/g, "-").replace(/\//g, "_");
+  }
+  if (options?.omitPadding) {
+    result = result.replace(/=/g, "");
+  }
+  return result;
+};
+
+async function sha256(input) {
+  const result = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(input)));
+  return result.toBase64({ alphabet: 'base64url', omitPadding: true });
+}
+
+async function newPkceState() {
+  const state = crypto.randomUUID();
+  const verifier = crypto.randomUUID();
+  tidyStates().set(state, [verifier, Date.now()]);
   return [
     state,
-    // Calculate the challenge
-    Buffer.from(new Uint8Array(
-      await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier))
-    ))
-      .toString('base64')
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=/g, "")
+    // Calculate and return the challenge
+    await sha256(verifier),
   ];
 }
+
+// Path for static files
+const docRoot = join(dirname(fileURLToPath(import.meta.url)), 'docs');
+
+// Allows for editing in devtools, and prevents an annoying 404
+// read more here: https://developer.chrome.com/docs/devtools/workspaces
+const osRoot = existsSync('/mnt/c') ? execSync(`wslpath -aw "${docRoot}"`).toString().trim() : docRoot;
+await mkdir(join(docRoot, '.well-known', 'appspecific'), { recursive: true });
+await writeFile(join(docRoot, '.well-known', 'appspecific', 'com.chrome.devtools.json'), JSON.stringify({
+  workspace: {
+    uuid: 'a4347fb1-d650-4da8-858c-2fac90b75e84',
+    root: osRoot,
+  }
+}), 'utf-8');
 
 createServer(async function (request, response) {
   const protocol = request.protocol ?? 'http:';
   const host = request.host ?? request.headers.host ?? `localhost:${PORT}`;
   const serverRoot = new URL(`${protocol}//${host}/`).toString();
   const url = new URL(request.url, serverRoot);
-  const path = url.pathname;
+  let path = url.pathname.replace(/\/\.+\//g, '/');
   const httpError = HttpError.factory(request);
+  if (path === '/') {
+    path = '/index.html';
+  }
   try {
     switch (path) {
-      case '/':
-      case '/index.html':
-        return response.writeHead(HttpCode.ok, { 'Content-Type': 'text/html' }).end(indexHtml);
-
       case '/oauth/request': {
         // @see https://cesium.com/learn/ion/ion-oauth2/#step-2-code-authorization
         // Generate randoms for the state and verifier, and store them both, using the state as the key
-        const [state, code_challenge] = await newState();
+        const [state, code_challenge] = await newPkceState();
 
         // Construct the request URL ans redirect the user
         return response.writeHead(HttpCode.found, {
@@ -244,11 +209,21 @@ createServer(async function (request, response) {
           location: `${serverRoot}index.html`,
         }).end();
       }
-      case '/.well-known/appspecific/com.chrome.devtools.json':
-        return response.writeHead(200, { 'content-type': 'application/json' }).end('{}');
-      case '/favicon.ico':
-        return response.writeHead(200, { 'content-type': 'image/svg+xml' }).end(favicon);
+
+      case '/config': {
+        return response.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify({
+          ionApi,
+        }));
+      }
+
       default: {
+        // Read a document from ./docs
+        const staticFile = join(docRoot, ...path.split('/'));
+        if (existsSync(staticFile)) {
+          const ext = path.match(/\.(?<ext>[^\.]+)/)?.groups?.ext;
+          const type = Types[ext] ?? 'text/plain';
+          return response.writeHead(200, { 'content-type': type }).end(await readFile(staticFile));
+        }
         throw httpError("Not Found", { status: HttpCode.notFound });
       }
     }
