@@ -23,7 +23,7 @@
     - retrieves the `code_verifier` from its own storage using the `state` from the query
     - POSTs to `{ionApi}/oauth/token`, body has `client_id`, `code` (from the query), `redirect_uri`, and `code_verifier`, etc,
     retrieving an `access_token`
-    - The `access_token` is given to the client somehow.  In this example, it's via the cookie `cs_access_token`.
+    - The `access_token` is given to the client somehow.  In this example, it's via the cookie `ion_access_token`.
 
 1. The `access_token` is used for making requests to `{ionApi}` by passing the header `Authorization: Bearer {access_token}`
 

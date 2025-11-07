@@ -9,7 +9,7 @@ const elements = {};
 const access_token = decodeURIComponent(
   (document.cookie
     .split(";")
-    .find((c) => c.trim().startsWith('cs_access_token=')) ?? ''
+    .find((c) => c.trim().startsWith('ion_access_token=')) ?? ''
   )
   .split('=').slice(1).join('=')
 );
@@ -73,7 +73,7 @@ elements.signin.addEventListener("click", async () => {
 });
 
 elements.signout.addEventListener("click", async () => {
-  document.cookie = `cs_access_token=; path=/; expires=01 Jan 1970 00:00:00 UTC`;
+  document.cookie = `ion_access_token=; path=/; expires=01 Jan 1970 00:00:00 UTC`;
   window.location.reload();
 });
 
