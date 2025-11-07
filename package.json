@@ -1,0 +1,11 @@
+{
+  "name": "ion-oauth2-example",
+  "description": "Quick-and-dirty example of OAuth2.0 authentication against Cesium Ion",
+  "version": "1.0.0",
+  "main": "index.mjs",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "node ."
+  }
+}
