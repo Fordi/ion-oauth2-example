@@ -1,8 +1,8 @@
 # Example OAuth2 for Cesium Ion with zero dependencies
 
-> See https://cesium.com/learn/ion/ion-oauth2/
+> See [Connecting to Cesium ion with OAuth2](https://cesium.com/learn/ion/ion-oauth2/) for the full explanation.
 
-## Getting this repo working:
+## Getting this repo working
 
 - [Create an application in Ion](https://ion.cesium.com/account/developer) with a redirect URI of `http://localhost:8080/oauth/callback`
 - Set `CESIUM_CLIENT_ID` in your environment or `{ clientId }` in a new ionConfig.json with the value in the Client ID column
@@ -10,14 +10,12 @@
 
 ## Short explanation
 
-[Full explanation](https://cesium.com/learn/ion/ion-oauth2/)
-
 1. The user initiates OAuth2 by interacting with the client
 1. The user's browser is directed to `/oauth/request`, which:
 
     - generates and stores a `state` and `code_verifier`
     - calculates a `code_challenge` as the SHA-256 of `code_verifier`
-    - redirects the user to `{ion}/oauth`, with a `code_challenge` (hashed validator), `state` (request identifier), and 
+    - redirects the user to `{ion}/oauth`, with a `code_challenge` (hashed validator), `state` (request identifier), and
     `scope` (list of scopes) in the query, among other things
 
 1. The user approves the sign-in on Ion, and is redirected to `/oauth/callback`, for token exchange:
