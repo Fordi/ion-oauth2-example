@@ -3,9 +3,9 @@ import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { join } from 'node:path';
 
+import { docRoot, ionApi, port } from "./lib/config.mjs";
 import { HttpCode, MimeTypes, hydrateRequest } from "./lib/http.mjs";
 import { getOauthCallback, getOauthRequest } from './lib/oauth2.mjs';
-import { docRoot, ionApi, port } from "./lib/config.mjs";
 
 async function getConfig(request, response) {
   return response.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify({
@@ -25,9 +25,9 @@ createServer(async function (request, response) {
   hydrateRequest(request);
   try {
     switch (request.path) {
+      case '/config': return await getConfig(request, response);
       case '/oauth/request': return await getOauthRequest(request, response);
       case '/oauth/callback': return await getOauthCallback(request, response);
-      case '/config': return await getConfig(request, response);
       default: return (
         await getStatic(request, response)
         ?? request.error("Not Found", { status: HttpCode.notFound }, true)
