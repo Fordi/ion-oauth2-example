@@ -30,8 +30,9 @@
 > Note: `{ion}` and `{ionApi}` are typically `https://ion.cesium.com` and `https://api.cesium.com` respectively, but this will work
 > against staging, development, and local instances of Ion just the same.
 
-This file provides, essentially, three entry points.  It does no proxying.
+`index.mjs` provides, essentially, four entry points.  It does no proxying.
 
-- A simple example client - `indexHtml` and `clientScript` - which handles minimal user interaction
 - `/oauth/request` - handles the code authorization and redirect explained in step 2
 - `/oauth/callback` - handles the token exchange explained in step 3, and hands the access_token to the client
+- `/config` - serves up the microserver's current configuration - presently, just the value of `{ionApi}`
+- A default handler for static files and 404's
