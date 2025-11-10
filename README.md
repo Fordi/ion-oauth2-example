@@ -107,7 +107,7 @@
   - `ion?: string` - the user-facing endpoint for an Ion instance.  Default: `"https://ion.cesium.com"`
   - `ionApi?: string` - the API endpoint for an Ion instance, Default: `"https://api.cesium.com/"`
   - `callbackUrl: string` - where Ion should redirect the user when they've approved.  Must match the  [OAuth Applications](https://ion.cesium.com/account/developer) row on your account exactly.
-  - `clientId: number` - The ID for the OAuth Application.  Must match the [OAuth Applications](https:/  ion.cesium.com/account/developer) row on your account exactly.
+  - `clientId: number` - The ID for the OAuth Application.  Must match the [OAuth Applications](https://ion.cesium.com/account/developer) row on your account exactly.
   - `scopes: string[]` - List of scopes the token should have access to (see [Scopes] below)
 
 - `new IonOAuthClient({ access_token })`
