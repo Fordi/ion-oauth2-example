@@ -83,21 +83,6 @@
 0 `/oauth/signout` - Deletes the `ion_access_token` cookie.
 - A default handler for static files and 404's
 
-## Scopes
-
-- `geocode` - Make geocode requests
-- `archives:read` - List and download the user's asset archives
-- `archives:write` - Create and delete the user's asset archives
-- `assets:list` - List the metadata for all of the user's assets
-- `assets:read` - Read metadata and access the tiled data for the user's assets
-- `assets:source` -  the uploaded source data for the user's assets
-- `assets:write` - Create, modify, and delete the user's assets
-- `exports:read` - List the user's asset exports
-- `exports:write` - Export the user's assets
-- `profile:read` - Read the user's  username, email address, avatar, and storage quota
-- `tokens:read` - List the user's tokens and see their scopes and assets
-- `tokens:write` - Create and delete the user's tokens, modify what a token can access
-
 ## IonOAuthClient
 
 `docs/common/IonOAuthClient.mjs` provides a simple API for server-backed and less clients to use:
@@ -108,7 +93,7 @@
   - `ionApi?: string` - the API endpoint for an Ion instance, Default: `"https://api.cesium.com/"`
   - `callbackUrl: string` - where Ion should redirect the user when they've approved.  Must match the  [OAuth Applications](https://ion.cesium.com/account/developer) row on your account exactly.
   - `clientId: number` - The ID for the OAuth Application.  Must match the [OAuth Applications](https://ion.cesium.com/account/developer) row on your account exactly.
-  - `scopes: string[]` - List of scopes the token should have access to (see [Scopes] below)
+  - `scopes: string[]` - List of scopes the token should have access to (see [Scopes](#scopes) below)
 
 - `new IonOAuthClient({ access_token })`
 
@@ -125,3 +110,18 @@
 - `IonOAuthClient#signIn()` - Redirects the user to the Ion OAuth page
 - `IonOAuthClient#signOut()` - Deletes the access_token and refreshes
 - `IonOAuthClient#fetch(urlOrInit, init?)` - Make an Ion API request; similar to `global#fetch`, but prepopulates the `Authorization` header and assumes the response is JSON.
+
+## Scopes
+
+- `geocode` - Make geocode requests
+- `archives:read` - List and download the user's asset archives
+- `archives:write` - Create and delete the user's asset archives
+- `assets:list` - List the metadata for all of the user's assets
+- `assets:read` - Read metadata and access the tiled data for the user's assets
+- `assets:source` -  the uploaded source data for the user's assets
+- `assets:write` - Create, modify, and delete the user's assets
+- `exports:read` - List the user's asset exports
+- `exports:write` - Export the user's assets
+- `profile:read` - Read the user's  username, email address, avatar, and storage quota
+- `tokens:read` - List the user's tokens and see their scopes and assets
+- `tokens:write` - Create and delete the user's tokens, modify what a token can access
