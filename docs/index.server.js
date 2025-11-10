@@ -1,16 +1,13 @@
 import { IonOAuthClient } from "./common/IonOAuthClient.mjs";
 
-const config = await fetch("./ionConfig.json").then(r => r.json());
-
-const ionClient = new IonOAuthClient(config);
-await ionClient.init();
-
-// Expose for console fun.
-globalThis.ionClient = ionClient;
-
 // Fast and dirty - get all the id'd elements as a map
 const elements = {};
 [...document.querySelectorAll("*[id]")].forEach((e) => elements[e.id] = e);
+
+const ionClient = new IonOAuthClient((await fetch('/config').then(r => r.json())));
+
+// Expose for console fun
+globalThis.ionClient = ionClient;
 
 // Do UI stuff.
 if (ionClient.loggedIn) {
@@ -21,11 +18,11 @@ if (ionClient.loggedIn) {
 }
 
 elements.signin.addEventListener("click", async () => {
-  await ionClient.signIn();
+  window.location = "/oauth/request";
 });
 
 elements.signout.addEventListener("click", async () => {
-  await ionClient.signOut();
+  window.location = "/oauth/sign-out";
 });
 
 elements.fetchAssets.addEventListener('click', async () => {

@@ -6,6 +6,10 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "node ."
+    "start:server-backed": "node .",
+    "start:serverless": "http-server docs"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
   }
 }
