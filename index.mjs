@@ -16,7 +16,7 @@ export async function getOAuthRequest(request, response) {
 
 export async function getOAuthCallback(request, response) {
   // @see https://cesium.com/learn/ion/ion-oauth2/#step-3-token-exchange
-  const ionClient = new IonOAuthClient(oauth.config);
+  const ionClient = new IonOAuthClient({ oauth });
   const { access_token } = await ionClient.init(request.url);
   return response.writeHead(HttpCode.found, {
     'set-cookie': `ion_access_token=${encodeURIComponent(access_token)}; path=/; HttpOnly=true`,
