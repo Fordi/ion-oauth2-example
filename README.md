@@ -80,7 +80,7 @@
 - `/oauth/request` - handles the code authorization and redirect explained in step 2
 - `/oauth/callback` - handles the token exchange explained in step 3, and hands the access_token to the client
 - `/config` - serves up the microserver's current configuration - presently, just the value of `{ionApi}` and the `HttpOnly` cookie, `ion_access_token`.
-0 `/oauth/signout` - Deletes the `ion_access_token` cookie.
+- `/oauth/signout` - Deletes the `ion_access_token` cookie.
 - A default handler for static files and 404's
 
 ## IonOAuthClient
@@ -106,9 +106,9 @@
   - Checks the passed location for a `code` and `state` and, if present, attempts token exchange
   - Retrieves the access_token from storage, if present
 
-- `IonOAuthClient#loggedIn` - if true, the instance is logged in
-- `IonOAuthClient#signIn()` - Redirects the user to the Ion OAuth page
-- `IonOAuthClient#signOut()` - Deletes the access_token and refreshes
+- `IonOAuthClient#loggedIn` - if true, the instance is logged in, and an `access_token` is available on the instance.
+- `IonOAuthClient#signIn()` - Redirects the user to the Ion OAuth page.  Returns the URL if `location` is not available (in Node).
+- `IonOAuthClient#signOut()` - Deletes the access_token and refreshes.  Only clears its `access_token` if `location` is not available.
 - `IonOAuthClient#fetch(urlOrInit, init?)` - Make an Ion API request; similar to `global#fetch`, but prepopulates the `Authorization` header and assumes the response is JSON.
 
 ## Scopes
