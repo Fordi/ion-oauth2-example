@@ -3,7 +3,10 @@ import { IonOAuthClient } from "./common/IonOAuthClient.mjs";
 const config = await fetch("./ionConfig.json").then(r => r.json());
 
 const ionClient = new IonOAuthClient(config);
-await ionClient.init();
+const { redirect } = await ionClient.init();
+if (redirect) {
+  history.replaceState({}, null, redirect);
+}
 
 // Expose for console fun.
 globalThis.ionClient = ionClient;
@@ -21,7 +24,7 @@ if (ionClient.loggedIn) {
 }
 
 elements.signin.addEventListener("click", async () => {
-  await ionClient.signIn();
+  await ionClient.signIn({ redirect: window.location.toString() });
 });
 
 elements.signout.addEventListener("click", async () => {
