@@ -29,14 +29,20 @@ export async function getVerifier(state) {
   const record = tidyStates()[state];
   delete states[state];
   stow();
-  return record?.[0];
+  if (!record) {
+    return undefined;
+  }
+  return {
+    verifier: record[0],
+    metadata: record[2],
+  };
 };
 
-export async function newPkceState() {
+export async function newPkceState(metadata = {}) {
   const crypto = globalThis.crypto ?? (await import('node:crypto'));
   const state = crypto.randomUUID();
   const verifier = crypto.randomUUID();
-  tidyStates()[state] =  [verifier, Date.now()];
+  tidyStates()[state] =  [verifier, Date.now(), metadata];
   stow();
   return [
     state,
