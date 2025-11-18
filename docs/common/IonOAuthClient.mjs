@@ -27,7 +27,6 @@ export class IonOAuthClient {
     if (code && state) {
       try {
         const response = await this.oauth.tokenExchange(code, state, location.toString());
-        console.log(response);
         access_token = response.access_token;
         if (access_token) {
           globalThis.localStorage?.setItem?.('ion_access_token', access_token);
@@ -43,7 +42,6 @@ export class IonOAuthClient {
     if (access_token) {
       this.access_token = access_token;
     }
-    console.log(this);
     return this;
   }
 

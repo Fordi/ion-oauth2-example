@@ -1,4 +1,4 @@
-import { sha256 } from "./sha265.mjs";
+import { sha256 } from "./sha256.mjs";
 
 /**
  * Dead-simple in-memory or in-localStorage store for OAuth state/code_verifier pairs with 

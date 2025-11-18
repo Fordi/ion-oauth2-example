@@ -36,7 +36,6 @@ export async function getConfigAndToken(request, response) {
     ...await getConfig(),
     ...(access_token ? { access_token } : {})
   }
-  console.log(config);
   return response.writeHead(200, { 'content-type': 'application/json' }).end(JSON.stringify(config));
 }
 
