@@ -20,11 +20,11 @@ export class IonOAuth {
     this.config = { ion, ionApi, clientId, callbackUrl, scopes };
   }
 
-  async getOauthRequestUrl() {
+  async getOauthRequestUrl(metadata = {}) {
     const crypto = globalThis.crypto ?? (await import('crypto'))?.webcrypto;
     // @see https://cesium.com/learn/ion/ion-oauth2/#step-2-code-authorization
     // Generate randoms for the state and verifier, and store them both, using the state as the key
-    const [state, code_challenge] = await newPkceState();
+    const [state, code_challenge] = await newPkceState(metadata);
     // Construct the request URL ans redirect the user
     return new URL(`/oauth?${new URLSearchParams({
       client_id: this.config.clientId,
@@ -40,10 +40,10 @@ export class IonOAuth {
   async tokenExchange(code, state) {
     // @see https://cesium.com/learn/ion/ion-oauth2/#step-3-token-exchange
     // Retrieve the verifier based on the state
-    const code_verifier = await getVerifier(state);
+    const { verifier, metadata } = await getVerifier(state);
 
     // If it isn't there, it's not a valid state.
-    if (!code_verifier) {
+    if (!verifier) {
       throw new Error("State mismatch");
     }
 
@@ -59,7 +59,7 @@ export class IonOAuth {
         body: JSON.stringify({
           client_id: this.config.clientId,
           code,
-          code_verifier,
+          code_verifier: verifier,
           grant_type: 'authorization_code',
           redirect_uri: this.config.callbackUrl,
         }),
@@ -75,7 +75,7 @@ export class IonOAuth {
       // Ion only ever uses `token_type: "bearer"`, so this means something's weird.
       throw new Error(`Unrecognized token_type: ${token_type}`);
     }
-    return { access_token, token_type };
+    return { access_token, token_type, metadata };
   }
 
 }
