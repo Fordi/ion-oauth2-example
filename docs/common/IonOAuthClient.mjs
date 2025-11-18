@@ -1,4 +1,4 @@
-import { IonOAuth } from "./IonOAuth.mjs";
+adaimport { IonOAuth } from "./IonOAuth.mjs";
 
 export class IonOAuthClient {
   constructor({
@@ -49,8 +49,8 @@ export class IonOAuthClient {
     return !!this.access_token;
   }
 
-  async signIn() {
-    const target = await this.oauth.getOauthRequestUrl();
+  async signIn(metadata = {}) {
+    const target = await this.oauth.getOauthRequestUrl(metadata);
     if (globalThis.location) {
       globalThis.location = target;
     }
