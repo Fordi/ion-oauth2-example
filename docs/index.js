@@ -3,6 +3,7 @@ import { IonOAuthClient } from "./common/IonOAuthClient.mjs";
 const config = await fetch("./ionConfig.json").then(r => r.json());
 
 const ionClient = new IonOAuthClient(config);
+// Retrieve any metadata that was stashed with the signIn call, and use it.
 const { redirect } = await ionClient.init();
 if (redirect) {
   history.replaceState({}, null, redirect);
@@ -24,6 +25,7 @@ if (ionClient.loggedIn) {
 }
 
 elements.signin.addEventListener("click", async () => {
+  // Other metadata can be added to the flow here at the signIn call as well.
   await ionClient.signIn({ redirect: window.location.toString() });
 });
 
