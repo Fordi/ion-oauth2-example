@@ -1,4 +1,4 @@
-adaimport { IonOAuth } from "./IonOAuth.mjs";
+import { IonOAuth } from "./IonOAuth.mjs";
 
 export class IonOAuthClient {
   constructor({
